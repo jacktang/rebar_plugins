@@ -1,12 +1,10 @@
 %%%-------------------------------------------------------------------
 %%% @author Jack Tang <jack@taodinet.com>
-%%% @author Slepher Chen <slepher.chen@taodinet.com>
-%%% 
 %%% @copyright (C) 2012, Jack Tang
 %%% @doc
 %%%
 %%% @end
-%%% Created : 31 Dec 2012 by Jack Tang <jack@taodi.local>
+%%% Created : 31 Dec 2012 by Jack Tang <jack@taodinet.com>
 %%%-------------------------------------------------------------------
 -module(espec_plugin).
 
@@ -20,29 +18,23 @@
 %%--------------------------------------------------------------------
 %% @doc
 %% @spec
-%%
-%% check espec in the dependencies
-%%
-%% rebar.config
-%%    {espec_dir, "spec"}
-%%
+%% @end
+%%--------------------------------------------------------------------
+
 %% usage : rebar spec : test specs in spec dir
 %%         rebar spec spec=test test test_spec.erl in spec dir
 %%         rebar spec all=true test all spec include deps
-%% 
-%% @end
-%%--------------------------------------------------------------------
-pre_espec(Config, Appfile) ->
-    % check espec in deps
-    ok.
-
+%%%===================================================================
+%%% API
+%%%===================================================================
 espec(Config, Appfile) ->
     rebar_deps:'check-deps'(Config, Appfile),
+    SpecDir = rebar_config:get(Config, spec_dir, "spec"),
     case rebar_config:get_global(Config, all, undefined) of
         "true" ->
-            case filelib:is_dir("spec") of
+            case filelib:is_dir(SpecDir) of
                 true ->
-                    Args = ["spec"],
+                    Args = [SpecDir],
                     espec_bin:run_spec_files_from_args(Args),
                     ok;
                 false ->
@@ -53,15 +45,15 @@ espec(Config, Appfile) ->
                 true ->
                     case rebar_config:get_global(Config, spec, undefined) of
                         undefined ->
-                            Args = ["spec"],
-                            case filelib:is_dir("spec") of
+                            Args = [SpecDir],
+                            case filelib:is_dir(SpecDir) of
                                 true ->
                                     espec_bin:run_spec_files_from_args(Args);
                                 false ->
                                     ok
                             end;
                         Spec ->
-                            Args = ["spec/" ++ Spec ++ "_spec"],
+                            Args = [SpecDir ++ "/" ++ Spec ++ "_spec"],
                             espec_bin:run_spec_files_from_args(Args)
                     end;
                 false ->
@@ -72,4 +64,5 @@ espec(Config, Appfile) ->
 
 %%%===================================================================
 %%% Internal functions
+%%%===================================================================
 %%%===================================================================
