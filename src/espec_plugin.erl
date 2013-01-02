@@ -30,6 +30,9 @@
 espec(Config, Appfile) ->
     rebar_deps:'check-deps'(Config, Appfile),
     SpecDir = rebar_config:get(Config, spec_dir, "spec"),
+    Ebin = rebar_utils:ebin_dir(),
+    code:add_patha(Ebin),
+    
     case rebar_config:get_global(Config, all, undefined) of
         "true" ->
             case filelib:is_dir(SpecDir) of
