@@ -1,0 +1,6 @@
+{metadata, [{nodename, 'srv@example.com'},
+            {scheduler, 4},
+            {app_config, "app.config"},
+            {pre_load, []} ]}.
+{'$suffix', ".sh"}.
+{'$chmod', 8#744}.
