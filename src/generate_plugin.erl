@@ -14,7 +14,7 @@
 %%%
 %%% ./rebar generate skeleton=otp.gen_server module=hello to=/tmp/
 %%% ./rebar generate skeleton=otp.gen_fsm
-%%% ./rebar generate skeleton=espec
+%%% ./rebar generate skeleton=espec module=foo
 %%% ./rebar generate skeleton=scripts.start-dev to=./ebin/
 %%% ./rebar generate skeleton=rebar.plugin module=test
 %%% 
@@ -53,11 +53,11 @@ generate(Config, _Appfile) ->
             case rebar_config:get_global(Config, skeleton, undefined) of
                 undefined ->
                     show_help();
-                GenSkeleton  ->
+                Skeleton  ->
                     Paths = rebar_config:get_global(Config, pa, []),
                     
-                    TemplateFile = template_file(SkeletonsDir, GenSkeleton),
-                    OptionsFile  = options_file(SkeletonsDir, GenSkeleton),
+                    TemplateFile = template_file(SkeletonsDir, Skeleton),
+                    OptionsFile  = options_file(SkeletonsDir, Skeleton),
                    
                     TemplateBin = load_file({template, TemplateFile}),
                     Options = load_file({options, OptionsFile}),
@@ -76,12 +76,22 @@ generate(Config, _Appfile) ->
                                {pre_load_opt, PreLoadOpt},
                                {env_opt, EnvOpt} 
                                | orddict:to_list(Metadata3)],
+
+                    Context2 = case rebar_config:get_global(Config, module, undefined) of
+                                   undefined -> Context;
+                                   Module ->
+                                       M = case Skeleton of
+                                                 "espec" -> Module ++ "_spec";
+                                                 _ -> Module
+                                             end,
+                                       [{module, M} | Context ]
+                               end,
                     
                     ReOpts = [global, {return, list}],
                     TemplateStr = binary_to_list(TemplateBin),
                     Str0 = re:replace(TemplateStr, "\\\\", "\\\\\\", ReOpts),
                     Str1 = re:replace(Str0, "\"", "\\\\\"", ReOpts),
-                    Merged = mustache:render(Str1, dict:from_list(Context)),
+                    Merged = mustache:render(Str1, dict:from_list(Context2)),
 
                     OutputFile = dest_file(TemplateFile, Config, Options),
                     case write_file(OutputFile, Merged, "1") of
@@ -125,9 +135,9 @@ pre_load_opt(Metadata) ->
               fun(PreLoad, Acc0) ->
                       case PreLoad of
                           {M, F} ->
-                              " -s " ++ to_list(M) ++ " " ++ to_list(F);
+                              Acc0 ++ " -s " ++ to_list(M) ++ " " ++ to_list(F);
                           M ->
-                              " -s " ++ to_list(M)
+                              Acc0 ++ " -s " ++ to_list(M)
                       end
               end, "", PreLoads);
         error ->
@@ -145,31 +155,51 @@ merge_meta(Metadata, Options) ->
 template_file(SkeletonsDir, GenSkeleton) ->
     File = re:replace(GenSkeleton,"(\\.)+","\\/",[global, {return,list}]) ++ ".template",
     filename:join(SkeletonsDir, File).
+            
+
 options_file(SkeletonsDir, GenSkeleton) ->
     File = re:replace(GenSkeleton,"(\\.)+","\\/",[global, {return,list}]) ++ ".opt",
     filename:join(SkeletonsDir, File).
 
 load_file({options, Path}) ->
-    {ok, Options} = file:consult(Path),
-    Options;
+    case filelib:is_regular(Path) of
+        true ->
+            {ok, Options} = file:consult(Path),
+            Options;
+        false ->
+            []
+    end;
 load_file({template, Path}) ->
     {ok, Bin} = file:read_file(Path),
     Bin.
 
 dest_file(TmplFilePath, Config, Options) ->
-    Cwd = rebar_utils:get_cwd(),
-    DestDir = rebar_config:get_global(Config, to, Cwd),
+    Skeleton = rebar_config:get_global(Config, skeleton, undefined),
+    DefaultDir = case Skeleton of
+                     "espec" ->
+                         proplists:get_value(dir, rebar_config:get(Config, espec, []), "spec");
+                     _ ->
+                         rebar_utils:get_cwd()
+                 end,
+    DestDir = rebar_config:get_global(Config, to, DefaultDir),
+    ok = filelib:ensure_dir(DestDir),
+    
     FileName = case rebar_config:get_global(Config, module, undefined) of
                    undefined ->
                        filename:rootname(filename:basename(TmplFilePath));
                    Module ->
                        Module
                end,
+    FileName2 = case Skeleton of
+                    "espec" -> FileName ++ "_spec";
+                    _ -> FileName
+                end,
+    
     case proplists:get_value('$suffix', Options, none) of
         none ->
-            filename:join(DestDir, FileName);
+            filename:join(DestDir, FileName2);
         Suffix ->
-            filename:join(DestDir, FileName ++ Suffix)
+            filename:join(DestDir, FileName2 ++ Suffix)
     end.
 
 write_file(Output, Data, Force) ->

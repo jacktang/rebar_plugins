@@ -1,0 +1,28 @@
+-module('{{module}}').
+
+-include_lib("espec/include/espec.hrl").
+
+spec() ->
+    describe("Descripe what do you want to test",
+             fun() ->
+                     describe("Function 1",
+                              fun() ->
+                                      before_each(
+                                        fun() ->
+                                                spec_set(var1, "variable 1")
+                                        end),
+                                      
+                                      it("should pass data to the callback",
+                                         fun() ->
+                                                 % do_stuff(spec_get(var1))
+                                                 ?assertEqual(true, true)
+                                         end),
+                                      
+                                      it("should be filled up as now it is one pending test case")
+                              end),
+                     
+                     describe("Function 2",
+                              fun() ->
+                                      it("one more pending")
+                              end)
+             end).
