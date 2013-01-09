@@ -4,7 +4,7 @@
 %%% @doc
 %%%
 %%% rebar.config
-%%%   {generate, [{skeletons, "deps/rebar.plugins/templates"},
+%%%   {generate, [{skeletons, "deps/rebar_plugins/templates"},
 %%%               {metadata, [ {authors, ["Jack Tang <jack@taodinet.com>"]}
 %%%                            {copyright, "" },
 %%%                            {license, ""}
@@ -14,6 +14,7 @@
 %%%
 %%% ./rebar generate skeleton=otp.gen_server module=hello to=/tmp/
 %%% ./rebar generate skeleton=otp.gen_fsm
+%%% ./rebar generate skeleton=lib module=datetime_utils
 %%% ./rebar generate skeleton=espec module=foo
 %%% ./rebar generate skeleton=scripts.start-dev to=./ebin/
 %%% ./rebar generate skeleton=rebar.plugin module=test
@@ -26,7 +27,7 @@
 %% API
 -export([pre_generate/2, generate/2]).
 
--define(DEFAULT_SKELETONS, "deps/rebar.plugins/generator/templates/").
+-define(DEFAULT_SKELETONS, "deps/rebar_plugins/generator/templates/").
 
 %%%===================================================================
 %%% API
@@ -112,6 +113,12 @@ generate(Config, _Appfile) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+generate_lib() ->
+    ok.
+
+generate_espec() ->
+    ok.
+
 pa_opt(Paths) ->
     string:join(["-pa " ++ Path || Path <- Paths], " ").
 mnesia_opt(Metadata) ->
