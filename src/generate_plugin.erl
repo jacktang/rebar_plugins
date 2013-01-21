@@ -14,9 +14,9 @@
 %%%
 %%% ./rebar generate skeleton=otp.gen_server module=hello to=/tmp/
 %%% ./rebar generate skeleton=otp.gen_fsm
-%%% ./rebar generate skeleton=lib module=datetime_utils
+%%% ./rebar generate skeleton=otp.start-dev to=./ebin/
+%%% ./rebar generate skeleton=lib_module module=datetime_utils
 %%% ./rebar generate skeleton=espec module=foo
-%%% ./rebar generate skeleton=scripts.start-dev to=./ebin/
 %%% ./rebar generate skeleton=rebar.plugin module=test
 %%% 
 %%% @end
@@ -48,64 +48,11 @@ generate(Config, _Appfile) ->
     case rebar_utils:processing_base_dir(Config) of % run rebar in cwd
         false -> ok;
         true ->
-            GenerateConf = rebar_config:get(Config, generate, []),
-            SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
-            
             case rebar_config:get_global(Config, skeleton, undefined) of
                 undefined ->
                     show_help();
                 Skeleton  ->
-                    Paths = rebar_config:get_global(Config, pa, []),
-                    
-                    TemplateFile = template_file(SkeletonsDir, Skeleton),
-                    OptionsFile  = options_file(SkeletonsDir, Skeleton),
-                   
-                    TemplateBin = load_file({template, TemplateFile}),
-                    Options = load_file({options, OptionsFile}),
-                    Metadata  = proplists:get_value(metadata, GenerateConf, []),
-                    Metadata2 = merge_meta(Metadata, Options),
-
-                    MnesiaOpt = mnesia_opt(Metadata2),
-                    EnvOpt    = env_opt(Metadata2),
-                    PreLoadOpt = pre_load_opt(Metadata2),
-                    
-                    Metadata3 = orddict:erase(env, orddict:erase(mnesia, Metadata2)),
-
-                    Context = [{date, "Jan 7 2013"},
-                               {pa_opt, pa_opt(Paths)},
-                               {mnesia_opt, MnesiaOpt},
-                               {pre_load_opt, PreLoadOpt},
-                               {env_opt, EnvOpt} 
-                               | orddict:to_list(Metadata3)],
-
-                    Context2 = case rebar_config:get_global(Config, module, undefined) of
-                                   undefined -> Context;
-                                   Module ->
-                                       M = case Skeleton of
-                                                 "espec" -> Module ++ "_spec";
-                                                 _ -> Module
-                                             end,
-                                       [{module, M} | Context ]
-                               end,
-                    
-                    ReOpts = [global, {return, list}],
-                    TemplateStr = binary_to_list(TemplateBin),
-                    Str0 = re:replace(TemplateStr, "\\\\", "\\\\\\", ReOpts),
-                    Str1 = re:replace(Str0, "\"", "\\\\\"", ReOpts),
-                    Merged = mustache:render(Str1, dict:from_list(Context2)),
-
-                    OutputFile = dest_file(TemplateFile, Config, Options),
-                    case write_file(OutputFile, Merged, "1") of
-                        ok ->
-                            case proplists:get_value('$chmod', Options, undefined) of
-                                Mod when is_integer(Mod) ->
-                                    ok = file:change_mode(OutputFile, Mod);
-                                E ->
-                                    io:format("Mod is not integer: ~p~n", [E])
-                            end;
-                        Error ->
-                            Error
-                    end
+                    do_generate(Skeleton, Config)
             end
     end.
 
@@ -113,11 +60,74 @@ generate(Config, _Appfile) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-generate_lib() ->
-    ok.
+do_generate('espec' = Skeleton, Config) ->
+    GenerateConf = rebar_config:get(Config, generate, []),
+    SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
+    
+    TemplateFile = template_file(SkeletonsDir, Skeleton),
+    OptionsFile  = options_file(SkeletonsDir, Skeleton),
+    
+    TemplateBin = load_file({template, TemplateFile}),
+    Options = load_file({options, OptionsFile}),
+    Metadata = proplists:get_value(metadata, GenerateConf, []),
+    MMetadata = merge_meta(Metadata, Options),
+    
+    Context = build_context(Skeleton, Config, MMetadata),
+    
+    ReOpts = [global, {return, list}],
+    TemplateStr = binary_to_list(TemplateBin),
+    Str0 = re:replace(TemplateStr, "\\\\", "\\\\\\", ReOpts),
+    Str1 = re:replace(Str0, "\"", "\\\\\"", ReOpts),
+    Merged = mustache:render(Str1, Context),
 
-generate_espec() ->
-    ok.
+    OutputFile = dest_file(TemplateFile, Config, Options),
+    case write_file(OutputFile, Merged, "1") of
+        ok ->
+            case proplists:get_value('$chmod', Options, undefined) of
+                Mod when is_integer(Mod) ->
+                    ok = file:change_mode(OutputFile, Mod);
+                E ->
+                    io:format("Mod is not integer: ~p~n", [E])
+            end;
+        Error ->
+            Error
+    end,
+    post_generate(Options, Config).
+
+build_context("otp.start_dev", Config, Metadata) ->
+    Paths = rebar_config:get_global(Config, pa, []),
+    MnesiaOpt = mnesia_opt(Metadata),
+    EnvOpt    = env_opt(Metadata),
+    PreLoadOpt = pre_load_opt(Metadata),
+    Metadata2 = orddict:erase(env, orddict:erase(mnesia, Metadata)),
+    
+    Context = [{date, "Jan 7 2013"},
+               {pa_opt, pa_opt(Paths)},
+               {mnesia_opt, MnesiaOpt},
+               {pre_load_opt, PreLoadOpt},
+               {env_opt, EnvOpt} 
+               | orddict:to_list(Metadata2)],
+    dict:from_list(Context);
+
+build_context("espec", Config, Metadata) ->
+    C = orddict:to_list(Metadata),
+    Context = case rebar_config:get_global(Config, module, undefined) of
+                  undefined -> C;
+                  Module    -> [{module, Module ++ "_spec"} | C ]
+               end,   
+    dict:from_list(Context);
+build_context(_Skeleton, _Config, Metadata) ->
+    C = orddict:to_list(Metadata),
+    dict:from_list(C).
+
+post_generate(Options, Config) ->
+    case proplists:get_value('$post_generate', Options) of
+        undefined -> ok;
+        PActions ->
+            lists:foreach(fun({F, A}) ->
+                                  F(A, Config)
+                          end, PActions)
+    end.
 
 pa_opt(Paths) ->
     string:join(["-pa " ++ Path || Path <- Paths], " ").
