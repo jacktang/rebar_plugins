@@ -25,7 +25,7 @@
 -module(generate_plugin).
 
 %% API
--export([pre_generate/2, generate/2]).
+-export([pre_generate/2, generate/2, do_generate/2]).
 
 -define(DEFAULT_SKELETONS, "deps/rebar_plugins/generator/templates/").
 
@@ -126,7 +126,7 @@ post_generate(Options, Config) ->
         undefined -> ok;
         PActions ->
             lists:foreach(fun({F, A}) ->
-                                  apply(F, [A, Config])
+                                  apply(?MODULE, F, [A, Config])
                           end, PActions)
     end.
 
