@@ -60,7 +60,7 @@ generate(Config, _Appfile) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-do_generate('espec' = Skeleton, Config) ->
+do_generate(Skeleton, Config) ->
     GenerateConf = rebar_config:get(Config, generate, []),
     SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
     
