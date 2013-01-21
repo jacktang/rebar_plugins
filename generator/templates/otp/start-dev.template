@@ -6,3 +6,4 @@ erl \
 {{mnesia_opt}} \
 {{pa_opt}} \
 {{pre_load_opt}} \
+; echo ""
