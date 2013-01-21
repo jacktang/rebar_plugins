@@ -1,6 +1,6 @@
 #!/bin/sh
 erl \
--name {{node_name}} -boot start_sasl +S {{scheduler}} \
+-name {{node_name}} -boot start_sasl +S {{scheduler}} +P {{processes}} \
 -config {{app_config}} \
 {{env_opt}} \
 {{mnesia_opt}} \
