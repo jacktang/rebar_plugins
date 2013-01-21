@@ -3,5 +3,6 @@
             {processes, 2000000},
             {app_config, "app.config"},
             {pre_load, []} ]}.
-{'$suffix', ".sh"}.
-{'$chmod', 8#744}.
+{'dest_dir', "ebin/"}
+{'$suffix',  ".sh"}.
+{'$chmod',   8#744}.

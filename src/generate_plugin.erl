@@ -87,7 +87,7 @@ do_generate(Skeleton, Config) ->
                 Mod when is_integer(Mod) ->
                     ok = file:change_mode(OutputFile, Mod);
                 E ->
-                    io:format("Mod is not integer: ~p~n", [E])
+                    E % io:format("Mod is not integer: ~p~n", [E])
             end;
         Error ->
             Error
@@ -191,33 +191,32 @@ load_file({template, Path}) ->
     {ok, Bin} = file:read_file(Path),
     Bin.
 
-dest_file(TmplFilePath, Config, Options) ->
-    Skeleton = rebar_config:get_global(Config, skeleton, undefined),
-    DefaultDir = case Skeleton of
-                     "espec" ->
+dest_file("espec", Config, Options) ->
+    DefaultDir = case proplists:get_value(dest_dir, Options, undefined) of
+                     undefined ->
                          proplists:get_value(dir, rebar_config:get(Config, espec, []), "spec");
-                     _ ->
-                         rebar_utils:get_cwd()
+                     V ->
+                         V
                  end,
+    FileName = rebar_config:get_global(Config, module, "example") ++ "_spec",
+    dest_file(DefaultDir, FileName, Config, Options);
+
+dest_file(_Skeleton, Config, Options) ->
+    DefaultDir = case proplists:get_value(dest_dir, Options, undefined) of
+                     undefined -> rebar_utils:get_cwd();
+                     V -> V
+                 end,
+    FileName = rebar_config:get_global(Config, module, "example"),
+    dest_file(DefaultDir, FileName, Config, Options).
+
+dest_file(DefaultDir, FileName, Config, Options) ->
     DestDir = rebar_config:get_global(Config, to, DefaultDir),
     ok = filelib:ensure_dir(DestDir),
-    
-    FileName = case rebar_config:get_global(Config, module, undefined) of
-                   undefined ->
-                       filename:rootname(filename:basename(TmplFilePath));
-                   Module ->
-                       Module
-               end,
-    FileName2 = case Skeleton of
-                    "espec" -> FileName ++ "_spec";
-                    _ -> FileName
-                end,
-    
     case proplists:get_value('$suffix', Options, none) of
         none ->
-            filename:join(DestDir, FileName2);
+            filename:join(DestDir, FileName);
         Suffix ->
-            filename:join(DestDir, FileName2 ++ Suffix)
+            filename:join(DestDir, FileName ++ Suffix)
     end.
 
 write_file(Output, Data, Force) ->

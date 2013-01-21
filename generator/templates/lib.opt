@@ -1,2 +1,3 @@
+{'dest_dir', "src"}.
 {'$suffix', ".erl"}.
 {'$post_generate', [{do_generate, "espec"}]}.
