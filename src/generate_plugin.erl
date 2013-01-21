@@ -176,7 +176,7 @@ template_file(SkeletonsDir, GenSkeleton) ->
             
 
 options_file(SkeletonsDir, GenSkeleton) ->
-    File = re:replace(GenSkeleton,"(\\.)+","\\/",[global, {return,list}]) ++ ".opt",e
+    File = re:replace(GenSkeleton,"(\\.)+","\\/",[global, {return,list}]) ++ ".opt",
     filename:join(SkeletonsDir, File).
 
 load_file({options, Path}) ->
