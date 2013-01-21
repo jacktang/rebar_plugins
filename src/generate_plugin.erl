@@ -116,6 +116,7 @@ build_context("espec", Config, Metadata) ->
                   Module    -> [{module, Module ++ "_spec"} | C ]
                end,   
     dict:from_list(Context);
+
 build_context(_Skeleton, _Config, Metadata) ->
     C = orddict:to_list(Metadata),
     dict:from_list(C).
@@ -125,7 +126,7 @@ post_generate(Options, Config) ->
         undefined -> ok;
         PActions ->
             lists:foreach(fun({F, A}) ->
-                                  F(A, Config)
+                                  apply(F, [A, Config])
                           end, PActions)
     end.
 
@@ -175,7 +176,7 @@ template_file(SkeletonsDir, GenSkeleton) ->
             
 
 options_file(SkeletonsDir, GenSkeleton) ->
-    File = re:replace(GenSkeleton,"(\\.)+","\\/",[global, {return,list}]) ++ ".opt",
+    File = re:replace(GenSkeleton,"(\\.)+","\\/",[global, {return,list}]) ++ ".opt",e
     filename:join(SkeletonsDir, File).
 
 load_file({options, Path}) ->
