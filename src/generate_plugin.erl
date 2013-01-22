@@ -80,7 +80,7 @@ do_generate(Skeleton, Config) ->
     Str1 = re:replace(Str0, "\"", "\\\\\"", ReOpts),
     Merged = mustache:render(Str1, Context),
 
-    OutputFile = dest_file(TemplateFile, Config, Options),
+    OutputFile = dest_file(Skeleton, Config, Options),
     case write_file(OutputFile, Merged, "1") of
         ok ->
             case proplists:get_value('$chmod', Options, undefined) of
@@ -200,6 +200,12 @@ dest_file("espec", Config, Options) ->
                  end,
     FileName = rebar_config:get_global(Config, module, "example") ++ "_spec",
     dest_file(DefaultDir, FileName, Config, Options);
+dest_file("otp.start-dev", Config, Options) ->
+    DefaultDir = case proplists:get_value(dest_dir, Options, undefined) of
+                     undefined -> rebar_utils:get_cwd();
+                     V -> V
+                 end,
+    dest_file(DefaultDir, "start-dev", Config, Options);
 
 dest_file(_Skeleton, Config, Options) ->
     DefaultDir = case proplists:get_value(dest_dir, Options, undefined) of
