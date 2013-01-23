@@ -94,7 +94,7 @@ do_generate(Skeleton, Config) ->
     end,
     post_generate(Options, Config).
 
-build_context("otp.start_dev", Config, Metadata) ->
+build_context("otp.start-dev", Config, Metadata) ->
     Paths = rebar_config:get_global(Config, pa, []),
     MnesiaOpt = mnesia_opt(Metadata),
     EnvOpt    = env_opt(Metadata),
