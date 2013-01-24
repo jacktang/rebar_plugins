@@ -1,2 +1,2 @@
 {'$suffix',  ".erl"}.
-{'dest_dir', "espec"}.
+{'dest_dir', "spec"}.
