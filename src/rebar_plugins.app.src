@@ -3,6 +3,7 @@
   {description, "Collections of Rebar Plugins"},
   %{vsn, {cmd, "git describe --abbrev=0"}},
   {vsn, "0.0.1"},
+  {modules, [generate_plugin, lock_deps_plugin]},
   {registered, []},
   {applications, [kernel,stdlib]}
  ]}.

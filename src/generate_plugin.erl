@@ -71,7 +71,7 @@ do_generate(Skeleton, Config) ->
     Options = load_file({options, OptionsFile}),
     Metadata = proplists:get_value(metadata, GenerateConf, []),
     MMetadata = merge_meta(Metadata, Options),
-    
+
     Context = build_context(Skeleton, Config, MMetadata),
     
     ReOpts = [global, {return, list}],
@@ -101,12 +101,19 @@ build_context("otp.start-dev", Config, Metadata) ->
     PreLoadOpt = pre_load_opt(Metadata),
     Metadata2 = orddict:erase(env, orddict:erase(mnesia, Metadata)),
     
-    Context = [{date, "Jan 7 2013"},
-               {pa_opt, pa_opt(Paths)},
+    Context = [  {pa_opt, pa_opt(Paths)},
                {mnesia_opt, MnesiaOpt},
                {pre_load_opt, PreLoadOpt},
                {env_opt, EnvOpt} 
                | orddict:to_list(Metadata2)],
+    dict:from_list(Context);
+
+build_context("lib", _Config, Metadata) ->
+    {{Year, _M, _D} = Date, Time} = erlang:localtime(),
+    
+    Context = [{year, Year},
+               {date, datetime_utils:datetime_as_string({Date, Time})}
+               | orddict:to_list(Metadata) ],
     dict:from_list(Context);
 
 build_context("espec", Config, Metadata) ->
@@ -117,9 +124,13 @@ build_context("espec", Config, Metadata) ->
                end,   
     dict:from_list(Context);
 
-build_context(_Skeleton, _Config, Metadata) ->
+build_context(_Skeleton, Config, Metadata) ->
     C = orddict:to_list(Metadata),
-    dict:from_list(C).
+    Context = case rebar_config:get_global(Config, module, undefined) of
+                  undefined -> C;
+                  Module    -> [{module, Module} | C ]
+               end,
+    dict:from_list(Context).
 
 post_generate(Options, Config) ->
     case proplists:get_value('$post_generate', Options) of
