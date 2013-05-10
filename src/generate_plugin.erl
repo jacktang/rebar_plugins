@@ -277,4 +277,4 @@ to_list(Any) when is_binary(Any) ->
     binary_to_list(Any).
     
 processing_base_dir(Config) ->
-    rebar_utils:processing_base_dir(Config, file_name:absname(rebar_utils:get_cwd())).
+    rebar_utils:processing_base_dir(Config, filename:absname(rebar_utils:get_cwd())).
