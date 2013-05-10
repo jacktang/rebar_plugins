@@ -45,7 +45,7 @@ pre_generate(Config, _) ->
 %% @end
 %%--------------------------------------------------------------------
 generate(Config, _Appfile) ->
-    case rebar_utils:processing_base_dir(Config) of % run rebar in cwd
+    case processing_base_dir(Config) of % run rebar in cwd
         false -> ok;
         true ->
             case rebar_config:get_global(Config, skeleton, undefined) of
@@ -276,3 +276,5 @@ to_list(Any) when is_atom(Any) ->
 to_list(Any) when is_binary(Any) ->
     binary_to_list(Any).
     
+processing_base_dir(Config) ->
+    rebar_utils:processing_base_dir(Config, file_name:absname(rebar_utils:get_cwd())).
