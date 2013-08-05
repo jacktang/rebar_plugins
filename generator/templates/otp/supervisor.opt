@@ -1,0 +1,5 @@
+{metadata, [{author, "Your Name"}, 
+            {email, "name@company.com"}]}.
+{'dest_dir', "src"}.
+{'$suffix', ".erl"}.
+{'$post_generate', []}

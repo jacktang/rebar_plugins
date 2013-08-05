@@ -1,0 +1,8 @@
+{application, '{{application}}',
+ [
+  {description, "What does the application do?"},
+  {vsn, "0.0.1"},
+  {modules, []},
+  {registered, []},
+  {applications, [kernel,stdlib]}
+ ]}.

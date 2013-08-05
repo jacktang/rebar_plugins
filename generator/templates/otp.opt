@@ -1,0 +1,6 @@
+{'$generate', [{do_generate, "otp.application"},
+               {do_generate, "otp.supervisor"},
+               {do_generate, "otp.app_src"},
+               {do_generate, "lib"},
+               {do_generate, "espec"},
+               {do_generate, "otp.start-dev"}]}

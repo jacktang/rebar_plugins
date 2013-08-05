@@ -1,0 +1,8 @@
+{metadata, [{author, "Your Name"}, 
+            {email, "name@company.com"}]}.
+{'dest_dir', "src"}.
+{'$suffix', ".erl"}.
+{'$post_generate', [{do_generate, "otp.app_src"},
+                    {do_generate, "otp.supervisor"},
+                    {do_generate, "lib"}]}
+
