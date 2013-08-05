@@ -18,6 +18,7 @@
 %%% ./rebar generate skeleton=lib_module module=datetime_utils
 %%% ./rebar generate skeleton=espec module=foo
 %%% ./rebar generate skeleton=rebar.plugin module=test
+%%% ./rebar generate skeleton=otp app=hello to=Code
 %%% 
 %%% @end
 %%% Created :  5 Jan 2013 by Jack Tang <jack@taodinet.com>
@@ -60,6 +61,22 @@ generate(Config, _Appfile) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+input_context(Config) ->
+    
+    ok.
+do_generate({template, File}, Config) ->
+    GenerateConf = rebar_config:get(Config, generate, []),
+    SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
+    TemplateFile = template_file(SkeletonsDir, Skeleton),
+    
+    ok;
+do_generate({options, File}, Config) ->
+    GenerateConf = rebar_config:get(Config, generate, []),
+    SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
+    OptionsFile  = options_file(SkeletonsDir, Skeleton),
+    
+    Options = load_file({options, OptionsFile}),
+    post_generate(Options, Config);
 do_generate(Skeleton, Config) ->
     GenerateConf = rebar_config:get(Config, generate, []),
     SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
@@ -93,6 +110,10 @@ do_generate(Skeleton, Config) ->
             Error
     end,
     post_generate(Options, Config).
+
+build_context("rebar.plugin", Config, Metadata) ->
+    PluginName = rebar_config:get_global(Config, )
+    dict:from_list(C);
 
 build_context("otp.start-dev", Config, Metadata) ->
     Paths = rebar_config:get_global(Config, pa, []),

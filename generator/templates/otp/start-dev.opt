@@ -1,5 +1,6 @@
 {metadata, [{nodename, 'srv@example.com'},
             {scheduler, 4},
+            {scheduler_bind_type, ps},
             {processes, 2000000},
             {app_config, "app.config"},
             {pre_load, []} ]}.
