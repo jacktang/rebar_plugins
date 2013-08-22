@@ -111,9 +111,9 @@ do_generate(Skeleton, Config) ->
     end,
     post_generate(Options, Config).
 
-build_context("rebar.plugin", Config, Metadata) ->
-    PluginName = rebar_config:get_global(Config, )
-    dict:from_list(C);
+%build_context("rebar.plugin", Config, Metadata) ->
+%    PluginName = rebar_config:get_global(Config, )
+%    dict:from_list(C);
 
 build_context("otp.start-dev", Config, Metadata) ->
     Paths = rebar_config:get_global(Config, pa, []),
