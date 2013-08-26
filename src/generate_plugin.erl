@@ -64,19 +64,20 @@ generate(Config, _Appfile) ->
 input_context(Config) ->
     
     ok.
-do_generate({template, File}, Config) ->
-    GenerateConf = rebar_config:get(Config, generate, []),
-    SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
-    TemplateFile = template_file(SkeletonsDir, Skeleton),
+
+%do_generate({template, File}, Config) ->
+%    GenerateConf = rebar_config:get(Config, generate, []),
+%    SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
+%    TemplateFile = template_file(SkeletonsDir, Skeleton),
     
-    ok;
-do_generate({options, File}, Config) ->
-    GenerateConf = rebar_config:get(Config, generate, []),
-    SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
-    OptionsFile  = options_file(SkeletonsDir, Skeleton),
+%    ok;
+%do_generate({options, File}, Config) ->
+%    GenerateConf = rebar_config:get(Config, generate, []),
+%    SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
+%    OptionsFile  = options_file(SkeletonsDir, Skeleton),
     
-    Options = load_file({options, OptionsFile}),
-    post_generate(Options, Config);
+%    Options = load_file({options, OptionsFile}),
+%    post_generate(Options, Config);
 do_generate(Skeleton, Config) ->
     GenerateConf = rebar_config:get(Config, generate, []),
     SkeletonsDir = proplists:get_value(skeletons, GenerateConf, ?DEFAULT_SKELETONS),
