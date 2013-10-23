@@ -2,7 +2,7 @@
             {scheduler, 4},
             {scheduler_bind_type, ps},
             {processes, 2000000},
-            {app_config, "app.config"},
+            {app_config, ["app.config"] },
             {pre_load, []} ]}.
 {'dest_dir', "ebin/"}.
 {'$suffix',  ".sh"}.

@@ -118,16 +118,19 @@ do_generate(Skeleton, Config) ->
 
 build_context("otp.start-dev", Config, Metadata) ->
     Paths = rebar_config:get_global(Config, pa, []),
+    
+    ConfigOpt = config_opt(Metadata),
     MnesiaOpt = mnesia_opt(Metadata),
     EnvOpt    = env_opt(Metadata),
     PreLoadOpt = pre_load_opt(Metadata),
     Metadata2 = orddict:erase(env, orddict:erase(mnesia, Metadata)),
     
     Context = [  {pa_opt, pa_opt(Paths)},
-               {mnesia_opt, MnesiaOpt},
-               {pre_load_opt, PreLoadOpt},
-               {env_opt, EnvOpt} 
-               | orddict:to_list(Metadata2)],
+                 {config_opt, ConfigOpt},
+                 {mnesia_opt, MnesiaOpt},
+                 {pre_load_opt, PreLoadOpt},
+                 {env_opt, EnvOpt} 
+                 | orddict:to_list(Metadata2)],
     dict:from_list(Context);
 
 build_context("lib", _Config, Metadata) ->
@@ -165,6 +168,13 @@ post_generate(Options, Config) ->
 
 pa_opt(Paths) ->
     string:join(["-pa " ++ Path || Path <- Paths], " ").
+config_opt(Metadata) ->
+    case orddict:find(app_config, Metadata) of
+        {ok, ConfOpt} ->
+            string:join(["-config " ++ to_list(V)  || V <- ConfOpt], " ");
+        error -> 
+            ""
+    end.
 mnesia_opt(Metadata) ->
     case orddict:find(mnesia, Metadata) of
         {ok, MnesiaOpt} ->
